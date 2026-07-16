@@ -11,11 +11,14 @@ import {
   HiCheckCircle,
 } from "react-icons/hi";
 import { toast } from "react-toastify";
-import { createDealPaymentIntent, confirmDealPayment as confirmDealPaymentAPI } from "@/lib/api";
+import {
+  createDealPaymentIntent,
+  confirmDealPayment as confirmDealPaymentAPI,
+} from "@/lib/api";
 import { formatPrice, formatNumber } from "@/lib/utils";
 
 const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ""
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
 );
 
 interface StripePaymentModalProps {
@@ -40,9 +43,11 @@ export default function StripePaymentModal({
   finalAmount,
   onSuccess,
 }: StripePaymentModalProps) {
-  const [step, setStep] = useState<"amount" | "payment" | "processing" | "success">("amount");
+  const [step, setStep] = useState<
+    "amount" | "payment" | "processing" | "success"
+  >("amount");
   const [earnestAmount, setEarnestAmount] = useState<number>(
-    Math.max(Math.round(finalAmount * (EARNEST_PERCENTAGE / 100)), MIN_EARNEST)
+    Math.max(Math.round(finalAmount * (EARNEST_PERCENTAGE / 100)), MIN_EARNEST),
   );
   const [customAmount, setCustomAmount] = useState("");
   const [clientSecret, setClientSecret] = useState("");
@@ -63,7 +68,12 @@ export default function StripePaymentModal({
       setPaymentError("");
       setCardComplete(false);
       setCustomAmount("");
-      setEarnestAmount(Math.max(Math.round(finalAmount * (EARNEST_PERCENTAGE / 100)), MIN_EARNEST));
+      setEarnestAmount(
+        Math.max(
+          Math.round(finalAmount * (EARNEST_PERCENTAGE / 100)),
+          MIN_EARNEST,
+        ),
+      );
     }
   }, [isOpen, finalAmount]);
 
@@ -189,7 +199,9 @@ export default function StripePaymentModal({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-        onClick={(e) => e.target === e.currentTarget && step !== "processing" && onClose()}
+        onClick={(e) =>
+          e.target === e.currentTarget && step !== "processing" && onClose()
+        }
       >
         {/* Backdrop */}
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
@@ -223,14 +235,20 @@ export default function StripePaymentModal({
               >
                 <HiCheckCircle className="w-9 h-9 text-emerald-600" />
               </motion.div>
-              <h3 className="text-xl font-bold text-dark mb-2">Payment Successful!</h3>
-              <p className="text-sm text-muted mb-1">Your earnest money has been received.</p>
+              <h3 className="text-xl font-bold text-dark mb-2">
+                Payment Successful!
+              </h3>
+              <p className="text-sm text-muted mb-1">
+                Your earnest money has been received.
+              </p>
               <p className="text-sm text-muted mb-6">
                 The agent will verify the payment and proceed with the deal.
               </p>
               <div className="bg-slate-50 rounded-xl p-4 mb-6 text-left">
                 <p className="text-xs text-muted mb-1">Transaction ID</p>
-                <p className="text-xs font-mono text-dark break-all">{paymentIntentId}</p>
+                <p className="text-xs font-mono text-dark break-all">
+                  {paymentIntentId}
+                </p>
               </div>
               <button
                 onClick={onClose}
@@ -247,8 +265,12 @@ export default function StripePaymentModal({
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
                 <HiCreditCard className="w-9 h-9 text-primary" />
               </div>
-              <h3 className="text-xl font-bold text-dark mb-2">Processing Payment...</h3>
-              <p className="text-sm text-muted">Please wait while we process your payment.</p>
+              <h3 className="text-xl font-bold text-dark mb-2">
+                Processing Payment...
+              </h3>
+              <p className="text-sm text-muted">
+                Please wait while we process your payment.
+              </p>
             </div>
           )}
 
@@ -262,8 +284,12 @@ export default function StripePaymentModal({
                     <HiCreditCard className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-dark">Pay Earnest Money</h2>
-                    <p className="text-xs text-muted">Secure payment via Stripe</p>
+                    <h2 className="text-lg font-bold text-dark">
+                      Pay Earnest Money
+                    </h2>
+                    <p className="text-xs text-muted">
+                      Secure payment via Stripe
+                    </p>
                   </div>
                 </div>
               </div>
@@ -272,11 +298,15 @@ export default function StripePaymentModal({
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 mb-6">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-muted">Property</span>
-                  <span className="text-sm font-medium text-dark truncate max-w-[200px]">{dealTitle}</span>
+                  <span className="text-sm font-medium text-dark truncate max-w-[200px]">
+                    {dealTitle}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-muted">Deal Amount</span>
-                  <span className="text-sm font-semibold text-dark">{formatPrice(finalAmount, "total")}</span>
+                  <span className="text-sm font-semibold text-dark">
+                    {formatPrice(finalAmount, "total")}
+                  </span>
                 </div>
                 <div className="border-t border-blue-200/60 my-2" />
                 <div className="flex items-center justify-between mb-2">
@@ -319,8 +349,20 @@ export default function StripePaymentModal({
                 {loading ? (
                   <>
                     <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                      />
                     </svg>
                     Processing...
                   </>
@@ -344,8 +386,12 @@ export default function StripePaymentModal({
                     <HiCreditCard className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-dark">Pay Earnest Money</h2>
-                    <p className="text-xs text-muted">Secure your deal with a deposit</p>
+                    <h2 className="text-lg font-bold text-dark">
+                      Pay Earnest Money
+                    </h2>
+                    <p className="text-xs text-muted">
+                      Secure your deal with a deposit
+                    </p>
                   </div>
                 </div>
               </div>
@@ -357,9 +403,11 @@ export default function StripePaymentModal({
                   <div className="text-sm text-amber-800">
                     <p className="font-medium mb-1">What is Earnest Money?</p>
                     <p className="text-xs text-amber-700 leading-relaxed">
-                      Earnest money is a good-faith deposit showing your commitment to purchase.
-                      It will be applied toward the final property price. Minimum: ৳{MIN_EARNEST.toLocaleString()},
-                      Maximum: ৳{MAX_EARNEST.toLocaleString()}.
+                      Earnest money is a good-faith deposit showing your
+                      commitment to purchase. It will be applied toward the
+                      final property price. Minimum: ৳
+                      {MIN_EARNEST.toLocaleString()}, Maximum: ৳
+                      {MAX_EARNEST.toLocaleString()}.
                     </p>
                   </div>
                 </div>
@@ -368,10 +416,16 @@ export default function StripePaymentModal({
               {/* Deal Summary */}
               <div className="bg-slate-50 rounded-xl p-4 mb-6">
                 <p className="text-xs text-muted mb-1">Property</p>
-                <p className="text-sm font-medium text-dark mb-3 truncate">{dealTitle}</p>
+                <p className="text-sm font-medium text-dark mb-3 truncate">
+                  {dealTitle}
+                </p>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted">Accepted Deal Amount</span>
-                  <span className="text-base font-bold text-dark">{formatPrice(finalAmount, "total")}</span>
+                  <span className="text-sm text-muted">
+                    Accepted Deal Amount
+                  </span>
+                  <span className="text-base font-bold text-dark">
+                    {formatPrice(finalAmount, "total")}
+                  </span>
                 </div>
               </div>
 
@@ -385,7 +439,9 @@ export default function StripePaymentModal({
                     <p className="text-xl font-bold text-primary">
                       ৳{formatNumber(earnestAmount)}
                     </p>
-                    <p className="text-xs text-muted">≈ ${(earnestAmount * BDT_TO_USD).toFixed(2)} USD</p>
+                    <p className="text-xs text-muted">
+                      ≈ ${(earnestAmount * BDT_TO_USD).toFixed(2)} USD
+                    </p>
                   </div>
                   <button
                     onClick={() => {
@@ -408,7 +464,9 @@ export default function StripePaymentModal({
                   Or Enter Custom Amount (BDT)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-medium text-muted">৳</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-medium text-muted">
+                    ৳
+                  </span>
                   <input
                     type="number"
                     value={customAmount}
@@ -424,30 +482,53 @@ export default function StripePaymentModal({
                     ≈ ${(Number(customAmount) * BDT_TO_USD).toFixed(2)} USD
                   </p>
                 )}
-                {customAmount && (Number(customAmount) < MIN_EARNEST || Number(customAmount) > MAX_EARNEST) && (
-                  <p className="text-xs text-red-500 mt-1">
-                    Amount must be between ৳{MIN_EARNEST.toLocaleString()} and ৳{MAX_EARNEST.toLocaleString()}
-                  </p>
-                )}
+                {customAmount &&
+                  (Number(customAmount) < MIN_EARNEST ||
+                    Number(customAmount) > MAX_EARNEST) && (
+                    <p className="text-xs text-red-500 mt-1">
+                      Amount must be between ৳{MIN_EARNEST.toLocaleString()} and
+                      ৳{MAX_EARNEST.toLocaleString()}
+                    </p>
+                  )}
               </div>
 
               {/* Security */}
               <div className="flex items-center gap-2 text-xs text-muted mb-6">
                 <HiShieldCheck className="w-4 h-4 text-emerald-500" />
-                <span>Payments are processed securely through Stripe. We never store your card details.</span>
+                <span>
+                  Payments are processed securely through Stripe. We never store
+                  your card details.
+                </span>
               </div>
 
               {/* Continue Button */}
               <button
                 onClick={handleCreateIntent}
-                disabled={loading || (customAmount && (Number(customAmount) < MIN_EARNEST || Number(customAmount) > MAX_EARNEST))}
+                disabled={
+                  loading ||
+                  (!!customAmount &&
+                    (Number(customAmount) < MIN_EARNEST ||
+                      Number(customAmount) > MAX_EARNEST))
+                }
                 className="w-full py-3.5 px-4 bg-primary text-white rounded-xl font-semibold text-sm hover:bg-primary/90 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>
                     <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                      />
                     </svg>
                     Initializing...
                   </>
