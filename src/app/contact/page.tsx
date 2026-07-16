@@ -17,7 +17,7 @@ import {
   HiChatAlt2,
   HiUserCircle,
 } from 'react-icons/hi';
-import toast from 'react-hot-toast';
+import { toast } from 'react-toastify';
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -87,8 +87,7 @@ export default function ContactPage() {
       toast.success("Message sent successfully! We'll get back to you soon.");
       reset();
     } catch {
-      toast.success("Message sent successfully! We'll get back to you soon.");
-      reset();
+      toast.error("Failed to send message. Please try again.");
     }
   };
 

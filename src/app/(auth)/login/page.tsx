@@ -6,16 +6,16 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod/v4';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { login as loginAPI } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import { handleGoogleLogin } from '@/lib/googleAuth';
-import { HiMail, HiLockClosed } from 'react-icons/hi';
-import toast from 'react-hot-toast';
+import { HiMail, HiEyeOff, HiEye } from 'react-icons/hi';
+import { toast } from 'react-toastify';
 
 const loginSchema = z.object({
   email: z.email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string().min(1, 'Password is required'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -23,9 +23,9 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const router = useRouter();
   const { setAuth } = useAuthStore();
-  const [error, setError] = useState('');
   const [googleLoading, setGoogleLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -37,7 +37,6 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    setError('');
     try {
       const res = await loginAPI(data);
       const { user, token } = res.data.data || res.data;
@@ -45,10 +44,11 @@ export default function LoginPage() {
       toast.success('Welcome back!');
       router.push('/');
     } catch (err: unknown) {
+      // API interceptor won't show toast for /auth/login 401, so we show it here
       const message =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
         'Invalid email or password';
-      setError(message);
+      toast.error(message);
     }
   };
 
@@ -60,14 +60,13 @@ export default function LoginPage() {
 
   const handleGoogleClick = async () => {
     setGoogleLoading(true);
-    setError('');
     try {
       const { user, token } = await handleGoogleLogin();
       setAuth(user, token);
       toast.success('Welcome back!');
       router.push('/');
     } catch (err: any) {
-      setError(err?.message || 'Google sign-in failed. Please try again.');
+      toast.error(err?.message || 'Google sign-in failed. Please try again.');
     } finally {
       setGoogleLoading(false);
     }
@@ -76,7 +75,7 @@ export default function LoginPage() {
   return (
     <>
       <h1 className="text-2xl md:text-3xl font-bold text-dark mb-1">Welcome Back</h1>
-      <p className="text-muted text-sm mb-6">Sign in to your HomeNest account</p>
+      <p className="text-muted text-sm mb-4">Sign in to your HomeNest account</p>
 
       {/* Google Login Button */}
       <motion.button
@@ -97,7 +96,7 @@ export default function LoginPage() {
       </motion.button>
 
       {/* Divider */}
-      <div className="relative my-6">
+      <div className="relative my-4">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-slate-200" />
         </div>
@@ -107,25 +106,8 @@ export default function LoginPage() {
       </div>
 
       {/* Form Card */}
-      <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 p-6 md:p-8">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          {/* Error Banner */}
-          <AnimatePresence>
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -10, height: 0 }}
-                animate={{ opacity: 1, y: 0, height: 'auto' }}
-                exit={{ opacity: 0, y: -10, height: 0 }}
-                className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-2xl px-4 py-3 flex items-center gap-2 overflow-hidden"
-              >
-                <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {error}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
+      <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 p-5 md:p-6 hover:shadow-xl transition-shadow duration-300">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Email */}
           <div>
             <label className="block text-sm font-medium text-dark mb-1.5">Email Address</label>
@@ -134,7 +116,7 @@ export default function LoginPage() {
               <input
                 type="email"
                 placeholder="you@example.com"
-                className={`w-full pl-11 pr-4 py-3 border rounded-2xl text-sm text-dark placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 ${
+                className={`w-full pl-11 pr-4 py-3 border rounded-2xl text-sm text-dark placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 hover:shadow-sm focus:shadow-md focus:shadow-primary/5 ${
                   errors.email ? 'border-red-400 bg-red-50/50' : 'border-slate-200 bg-slate-50/50 hover:border-slate-300'
                 }`}
                 {...register('email')}
@@ -143,25 +125,32 @@ export default function LoginPage() {
             {errors.email && <p className="mt-1.5 text-sm text-red-600">{errors.email.message}</p>}
           </div>
 
-          {/* Password */}
+          {/* Password with show/hide toggle */}
           <div>
             <label className="block text-sm font-medium text-dark mb-1.5">Password</label>
             <div className="relative">
-              <HiLockClosed className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
+              <HiEyeOff className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 placeholder="Enter your password"
-                className={`w-full pl-11 pr-4 py-3 border rounded-2xl text-sm text-dark placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 ${
+                className={`w-full pl-11 pr-11 py-3 border rounded-2xl text-sm text-dark placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 hover:shadow-sm focus:shadow-md focus:shadow-primary/5 ${
                   errors.password ? 'border-red-400 bg-red-50/50' : 'border-slate-200 bg-slate-50/50 hover:border-slate-300'
                 }`}
                 {...register('password')}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-dark transition-colors cursor-pointer"
+              >
+                {showPassword ? <HiEyeOff className="w-5 h-5" /> : <HiEye className="w-5 h-5" />}
+              </button>
             </div>
             {errors.password && <p className="mt-1.5 text-sm text-red-600">{errors.password.message}</p>}
           </div>
 
-          {/* Remember me + Forgot password */}
-          <div className="flex items-center justify-between">
+          {/* Remember me */}
+          <div className="flex items-center justify-end">
             <label className="flex items-center gap-2 cursor-pointer group">
               <input
                 type="checkbox"
@@ -171,12 +160,6 @@ export default function LoginPage() {
               />
               <span className="text-sm text-muted group-hover:text-dark transition-colors">Remember me</span>
             </label>
-            <Link
-              href="/forgot-password"
-              className="text-sm text-primary font-medium hover:text-primary-dark transition-colors"
-            >
-              Forgot password?
-            </Link>
           </div>
 
           {/* Sign In Button */}

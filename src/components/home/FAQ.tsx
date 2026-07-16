@@ -35,24 +35,24 @@ export default function FAQ() {
           {faqs.map((faq, idx) => (
             <motion.div
               key={idx}
-              className="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-100 hover:border-slate-200 transition-colors"
+              className="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-100 hover:border-slate-200 hover:shadow-md transition-all duration-300"
               initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.3, delay: idx * 0.05 }}
+              transition={{ duration: 0.35, delay: idx * 0.06, ease: "easeOut" }}
             >
               <button
                 onClick={() => toggle(idx)}
-                className="flex items-center justify-between w-full px-6 py-5 text-left cursor-pointer hover:bg-slate-50/50 transition-colors"
+                className="flex items-center justify-between w-full px-6 py-5 text-left cursor-pointer hover:bg-slate-50/50 transition-all duration-200 group"
               >
-                <span className="text-sm font-semibold text-dark pr-4">{faq.question}</span>
+                <span className="text-sm font-semibold text-dark pr-4 group-hover:text-primary transition-colors duration-200">{faq.question}</span>
                 <motion.span animate={{ rotate: openIndex === idx ? 180 : 0 }} transition={{ duration: 0.2 }} className="shrink-0">
                   <HiChevronDown className="w-5 h-5 text-muted" />
                 </motion.span>
               </button>
               <AnimatePresence>
                 {openIndex === idx && (
-                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} className="overflow-hidden">
                     <div className="px-6 pb-5 pt-0">
                       <p className="text-sm text-muted leading-relaxed">{faq.answer}</p>
                     </div>

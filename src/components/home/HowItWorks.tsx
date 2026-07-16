@@ -115,7 +115,7 @@ export default function HowItWorks() {
           {steps.map((step, idx) => (
             <motion.div
               key={step.number}
-              className="relative z-10 bg-white rounded-2xl p-8 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group"
+              className="relative z-10 bg-white rounded-2xl p-8 border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-2.5 transition-all duration-300 group cursor-default hover:border-slate-200"
               variants={cardFade}
               custom={idx}
               initial="hidden"
@@ -125,7 +125,7 @@ export default function HowItWorks() {
               {/* Large numbered circle */}
               <div className="flex items-center justify-center mb-6">
                 <div
-                  className={`relative w-20 h-20 rounded-full bg-gradient-to-br ${step.gradient} flex items-center justify-center shadow-lg ring-4 ${step.ringColor} group-hover:scale-110 transition-transform duration-300`}
+                  className={`relative w-20 h-20 rounded-full bg-gradient-to-br ${step.gradient} flex items-center justify-center shadow-lg ring-4 ${step.ringColor} group-hover:scale-110 group-hover:shadow-xl transition-all duration-300`}
                 >
                   <step.icon className="w-8 h-8 text-white" />
                   {/* Step number badge */}
@@ -135,7 +135,7 @@ export default function HowItWorks() {
                 </div>
               </div>
 
-              <h3 className="text-xl font-bold text-dark text-center mb-3">
+              <h3 className="text-xl font-bold text-dark text-center mb-3 group-hover:text-primary transition-colors duration-300">
                 {step.title}
               </h3>
 

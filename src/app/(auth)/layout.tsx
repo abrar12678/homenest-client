@@ -162,7 +162,7 @@ export default function AuthLayout({
           transition={spring}
         >
           <DecorativeShapes />
-          <div className="relative z-10 flex flex-col justify-center h-full px-12 xl:px-16 py-16 xl:py-20">
+          <div className="relative z-10 flex flex-col justify-center h-full px-10 xl:px-16 py-10 xl:py-16">
             <div className={`max-w-md ${isLogin ? "" : "ml-auto"}`}>
               {isLogin ? <LoginDesignCard /> : <RegisterDesignCard />}
             </div>
@@ -179,7 +179,7 @@ export default function AuthLayout({
           exit={{ x: isLogin ? "-100%" : "100%", opacity: 0 }}
           transition={spring}
         >
-          <div className="h-full flex flex-col justify-center px-12 xl:px-16 py-16 xl:py-20 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="h-full flex flex-col justify-center px-10 xl:px-16 py-10 xl:py-16 overflow-hidden">
             <motion.div
               className={`w-full max-w-md ${isLogin ? "ml-auto" : "mr-auto"}`}
               initial={{ opacity: 0, y: 15 }}

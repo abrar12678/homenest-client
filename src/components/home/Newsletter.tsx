@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { HiMail } from "react-icons/hi";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 export default function Newsletter() {
   const [email, setEmail] = useState("");
@@ -14,10 +14,10 @@ export default function Newsletter() {
     if (!email) return;
     setLoading(true);
     setTimeout(() => {
-      toast.success("Successfully subscribed to newsletter!");
+      toast.success("Thank you for subscribing! We'll notify you of new listings.");
       setEmail("");
       setLoading(false);
-    }, 1000);
+    }, 800);
   };
 
   return (
@@ -45,7 +45,7 @@ export default function Newsletter() {
           transition={{ duration: 0.7, ease: "easeOut" }}
         >
           {/* Icon */}
-          <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10">
+          <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 shadow-lg shadow-white/5">
             <HiMail className="h-7 w-7 text-blue-300" />
           </div>
 
@@ -73,14 +73,14 @@ export default function Newsletter() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email address"
                 required
-                className="h-full w-full rounded-xl bg-white py-3.5 pl-12 pr-4 text-sm text-[#1E293B] shadow-lg transition-shadow focus:outline-none focus:ring-2 focus:ring-emerald-400/50 sm:rounded-r-none sm:rounded-bl-xl sm:rounded-tl-xl"
+                className="h-full w-full rounded-xl bg-white py-3.5 pl-12 pr-4 text-sm text-[#1E293B] shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 focus:shadow-xl hover:shadow-xl sm:rounded-r-none sm:rounded-bl-xl sm:rounded-tl-xl"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 px-7 py-3.5 font-semibold text-sm text-white shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:from-emerald-600 hover:to-emerald-700 hover:shadow-emerald-500/40 disabled:opacity-60 sm:w-auto rounded-xl sm:rounded-l-none sm:rounded-br-xl sm:rounded-tr-xl"
+              className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 px-7 py-3.5 font-semibold text-sm text-white shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:from-emerald-600 hover:to-emerald-700 hover:shadow-emerald-500/40 hover:scale-[1.03] active:scale-[0.98] disabled:opacity-60 sm:w-auto rounded-xl sm:rounded-l-none sm:rounded-br-xl sm:rounded-tr-xl cursor-pointer"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">

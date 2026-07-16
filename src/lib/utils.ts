@@ -1,4 +1,5 @@
-export function formatPrice(price: number, priceType: string): string {
+export function formatPrice(price: number | undefined, priceType: string): string {
+  if (!price || typeof price !== 'number') return 'Price on request';
   const formatted = price.toLocaleString('en-IN');
   if (priceType === 'monthly') {
     return `৳${formatted}/month`;
@@ -6,8 +7,10 @@ export function formatPrice(price: number, priceType: string): string {
   return `৳${formatted}`;
 }
 
-export function formatDate(dateString: string): string {
+export function formatDate(dateString: string | undefined | null): string {
+  if (!dateString) return 'N/A';
   const date = new Date(dateString);
+  if (isNaN(date.getTime())) return 'N/A';
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -15,16 +18,18 @@ export function formatDate(dateString: string): string {
   });
 }
 
-export function formatNumber(num: number): string {
+export function formatNumber(num: number | undefined | null): string {
+  if (num == null || typeof num !== 'number') return '0';
   return num.toLocaleString('en-US');
 }
 
-export function getStarRating(rating: number): ('full' | 'half' | 'empty')[] {
+export function getStarRating(rating: number | undefined | null): ('full' | 'half' | 'empty')[] {
+  const safeRating = typeof rating === 'number' ? rating : 0;
   const stars: ('full' | 'half' | 'empty')[] = [];
   for (let i = 1; i <= 5; i++) {
-    if (rating >= i) {
+    if (safeRating >= i) {
       stars.push('full');
-    } else if (rating >= i - 0.5) {
+    } else if (safeRating >= i - 0.5) {
       stars.push('half');
     } else {
       stars.push('empty');

@@ -30,10 +30,10 @@ export default function FeaturedProperties() {
         {/* Section title */}
         <div className="text-center mb-12 md:mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-dark mb-3">
-            Featured Properties
+            Top Reviewed Properties
           </h2>
           <p className="text-muted max-w-2xl mx-auto">
-            Handpicked properties that offer the best value and living experience
+            Most reviewed and highest-rated properties from our platform — updated in real-time
           </p>
         </div>
 
@@ -58,7 +58,7 @@ export default function FeaturedProperties() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                       </svg>
                     </div>
-                    <p className="text-sm text-muted">Featured listings coming soon</p>
+                    <p className="text-sm text-muted">Properties will appear here as reviews come in</p>
                   </motion.div>
                 ))}
         </div>

@@ -45,7 +45,7 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
+    <section className="relative h-[65vh] flex items-center justify-center overflow-hidden">
       {/* ── Rich gradient background ── */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#0B1120] via-primary-dark to-primary" />
 
@@ -77,7 +77,7 @@ export default function Hero() {
       />
 
       {/* ── Content ── */}
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 text-center pt-32 pb-20">
+      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 text-center pt-44 pb-28">
         {/* Badge */}
         <motion.div
           className="inline-flex items-center gap-2.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-5 py-2 mb-10"
@@ -191,7 +191,7 @@ export default function Hero() {
             {/* Search button */}
             <button
               onClick={handleSearch}
-              className="px-6 py-3.5 bg-gradient-to-r from-primary-dark to-primary hover:from-primary hover:to-primary-light text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all duration-300 sm:w-auto w-full"
+              className="px-6 py-3.5 bg-gradient-to-r from-primary-dark to-primary hover:from-primary hover:to-primary-light text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all duration-300 sm:w-auto w-full cursor-pointer hover:scale-[1.03] hover:-translate-y-0.5 active:scale-[0.98]"
             >
               <HiSearch className="w-5 h-5" />
               Search
@@ -209,14 +209,14 @@ export default function Hero() {
         >
           <button
             onClick={() => router.push("/properties")}
-            className="group px-8 py-3.5 bg-white text-primary rounded-xl font-semibold text-sm shadow-lg shadow-black/10 hover:-translate-y-0.5 hover:shadow-xl transition-all duration-300 flex items-center gap-2"
+            className="group px-8 py-3.5 bg-white text-primary rounded-xl font-semibold text-sm shadow-lg shadow-black/10 hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 flex items-center gap-2 cursor-pointer hover:scale-[1.03] active:scale-[0.98]"
           >
             Explore Properties
             <HiArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
           </button>
           <button
             onClick={() => router.push("/login")}
-            className="px-8 py-3.5 bg-transparent border border-white/30 text-white rounded-xl font-semibold text-sm hover:bg-white/10 transition-all duration-300"
+            className="px-8 py-3.5 bg-transparent border border-white/30 text-white rounded-xl font-semibold text-sm hover:bg-white/15 hover:border-white/50 hover:-translate-y-1 transition-all duration-300 cursor-pointer hover:scale-[1.03] active:scale-[0.98]"
           >
             List Your Property
           </button>

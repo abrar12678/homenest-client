@@ -101,18 +101,18 @@ export default function WhyChooseUs() {
           {features.map((feature) => (
             <motion.div
               key={feature.title}
-              className="group bg-white rounded-2xl p-7 text-center border border-slate-100 hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-default"
+              className="group bg-white rounded-2xl p-7 text-center border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-default hover:border-slate-200 hover:scale-[1.02]"
               variants={cardVariants}
             >
               {/* Icon */}
               <div
-                className={`w-16 h-16 rounded-2xl ${feature.bgClass} flex items-center justify-center mx-auto mb-5 group-hover:scale-110 transition-transform duration-300`}
+                className={`w-16 h-16 rounded-2xl ${feature.bgClass} flex items-center justify-center mx-auto mb-5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-sm group-hover:shadow-md`}
               >
                 <feature.icon className="w-8 h-8" style={{ color: feature.color }} />
               </div>
 
               {/* Title */}
-              <h3 className="text-lg font-bold text-dark mb-2">{feature.title}</h3>
+              <h3 className="text-lg font-bold text-dark mb-2 group-hover:text-primary transition-colors duration-300">{feature.title}</h3>
 
               {/* Description */}
               <p className="text-sm text-muted leading-relaxed">{feature.description}</p>

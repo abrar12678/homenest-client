@@ -86,20 +86,20 @@ export default function Stats({ title }: { title?: string } = {}) {
           {statItems.map((item, idx) => (
             <motion.div
               key={item.key}
-              className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6 text-center text-white cursor-default hover:scale-105 hover:bg-white/15 transition-all duration-300"
+              className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6 text-center text-white cursor-default hover:scale-[1.06] hover:bg-white/15 transition-all duration-300 hover:shadow-lg hover:shadow-white/5"
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: idx * 0.12 }}
+              transition={{ duration: 0.6, delay: idx * 0.15, ease: "easeOut" }}
             >
               {/* Icon */}
-              <div className="w-14 h-14 rounded-2xl bg-white/15 flex items-center justify-center mx-auto mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-white/15 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                 <item.icon className="w-7 h-7" />
               </div>
 
               {/* Counter */}
               <div className="text-2xl md:text-3xl font-extrabold mb-1">
-                <AnimatedNumber target={stats[item.key]} />
+                <AnimatedNumber target={typeof stats[item.key] === 'number' ? stats[item.key] as number : 0} />
               </div>
 
               {/* Label */}

@@ -50,14 +50,14 @@ export default function CTA() {
           {/* CTA Buttons */}
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link href="/properties" className="group w-full sm:w-auto">
-              <span className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1E40AF] to-[#2563EB] px-8 py-4 font-semibold text-sm text-white shadow-lg shadow-blue-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/40">
+              <span className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1E40AF] to-[#2563EB] px-8 py-4 font-semibold text-sm text-white shadow-lg shadow-blue-500/25 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/50 hover:scale-[1.03] hover:-translate-y-0.5 cursor-pointer">
                 Explore Properties
                 <HiArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
               </span>
             </Link>
 
             <Link href="/login" className="group w-full sm:w-auto">
-              <span className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-8 py-4 font-semibold text-sm text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/20">
+              <span className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-8 py-4 font-semibold text-sm text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/20 hover:border-white/40 hover:scale-[1.03] hover:-translate-y-0.5 cursor-pointer">
                 List Your Property
               </span>
             </Link>

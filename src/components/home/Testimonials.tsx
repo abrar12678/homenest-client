@@ -1,38 +1,55 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { HiStar } from "react-icons/hi";
+import { getStats } from "@/lib/api";
+import { truncateText } from "@/lib/utils";
 
-const testimonials = [
+interface TestimonialItem {
+  name: string;
+  role: string;
+  rating: number;
+  initials: string;
+  gradient: string;
+  borderColor: string;
+  text: string;
+}
+
+const gradients = [
+  { gradient: "from-blue-500 to-blue-600", border: "border-l-blue-500" },
+  { gradient: "from-emerald-500 to-emerald-600", border: "border-l-emerald-500" },
+  { gradient: "from-amber-500 to-amber-600", border: "border-l-amber-500" },
+];
+
+// Fallback testimonials when DB has no reviews yet
+const fallbackTestimonials: TestimonialItem[] = [
   {
-    name: "Rahim Uddin",
-    role: "Homeowner in Gulshan",
+    name: "HomeNest User",
+    role: "Property Explorer",
     rating: 5,
-    initials: "RU",
+    initials: "HN",
     gradient: "from-blue-500 to-blue-600",
     borderColor: "border-l-blue-500",
-    quoteColor: "text-blue-500",
-    text: "HomeNest made finding our dream apartment in Dhanmondi incredibly easy. The verified listings gave us complete peace of mind, and the whole process was smoother than we ever imagined.",
+    text: "HomeNest provides a great platform for finding properties. The listings are well-organized and the search filters make it easy to find exactly what you need.",
   },
   {
-    name: "Fatima Akhter",
+    name: "Verified Agent",
     role: "Property Agent",
     rating: 5,
-    initials: "FA",
+    initials: "VA",
     gradient: "from-emerald-500 to-emerald-600",
     borderColor: "border-l-emerald-500",
-    quoteColor: "text-emerald-500",
-    text: "As a property agent, listing on HomeNest has been fantastic. The platform is professional and I get genuine inquiries. My listings get much more visibility compared to other platforms.",
+    text: "Listing on HomeNest has been a great experience. The platform is professional and helps connect agents with genuine buyers effectively.",
   },
   {
-    name: "Karim Hossain",
-    role: "Business Owner",
+    name: "Satisfied Client",
+    role: "Home Buyer",
     rating: 4,
-    initials: "KH",
+    initials: "SC",
     gradient: "from-amber-500 to-amber-600",
     borderColor: "border-l-amber-500",
-    quoteColor: "text-amber-500",
-    text: "The search and filter options are amazing. I found the perfect commercial space for my business within a week! The customer support team was also very helpful throughout the process.",
+    text: "Found the perfect property through HomeNest. The detailed listings and reviews helped us make an informed decision quickly and confidently.",
   },
 ];
 
@@ -55,6 +72,37 @@ const cardVariants = {
 };
 
 export default function Testimonials() {
+  const [testimonials, setTestimonials] = useState<TestimonialItem[]>(fallbackTestimonials);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    getStats()
+      .then((res) => {
+        const data = res.data?.data;
+        if (data?.recentTestimonials && data.recentTestimonials.length > 0) {
+          const items: TestimonialItem[] = data.recentTestimonials.slice(0, 3).map((review: any, idx: number) => {
+            const colors = gradients[idx % gradients.length];
+            const nameParts = review.userName.split(" ");
+            const initials = nameParts.length >= 2
+              ? (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase()
+              : review.userName.substring(0, 2).toUpperCase();
+            return {
+              name: review.userName,
+              role: review.propertyTitle ? `Reviewed: ${truncateText(review.propertyTitle, 30)}` : "Verified Reviewer",
+              rating: review.rating,
+              initials,
+              gradient: colors.gradient,
+              borderColor: colors.border,
+              text: review.comment,
+            };
+          });
+          setTestimonials(items);
+        }
+        setLoaded(true);
+      })
+      .catch(() => setLoaded(true));
+  }, []);
+
   return (
     <section className="py-20 md:py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -98,8 +146,8 @@ export default function Testimonials() {
         >
           {testimonials.map((t) => (
             <motion.div
-              key={t.name}
-              className={`group relative bg-white rounded-2xl p-7 border border-slate-100 border-l-4 ${t.borderColor} hover:shadow-xl transition-all duration-300 flex flex-col`}
+              key={t.name + t.text}
+              className={`group relative bg-white rounded-2xl p-7 border border-slate-100 border-l-4 ${t.borderColor} hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col hover:border-slate-200`}
               variants={cardVariants}
             >
               {/* Decorative Quote Mark */}
@@ -110,7 +158,7 @@ export default function Testimonials() {
               </div>
 
               {/* Star Rating */}
-              <div className="flex gap-0.5 mb-4">
+              <div className="flex gap-0.5 mb-4 group-hover:gap-1 transition-all duration-300">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <HiStar
                     key={i}

@@ -11,20 +11,23 @@ import { useAuthStore } from '@/lib/store';
 import { handleGoogleLogin } from '@/lib/googleAuth';
 import {
   HiMail,
-  HiLockClosed,
   HiUser,
   HiStar,
   HiHome,
   HiEye,
   HiEyeOff,
 } from 'react-icons/hi';
-import toast from 'react-hot-toast';
+import { toast } from 'react-toastify';
 
 const registerSchema = z
   .object({
     name: z.string().min(2, 'Name must be at least 2 characters'),
     email: z.email('Please enter a valid email address'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
+    password: z
+      .string()
+      .min(8, 'Password must be at least 8 characters')
+      .regex(/[A-Za-z]/, 'Password must contain at least one letter')
+      .regex(/[0-9]/, 'Password must contain at least one number'),
     confirmPassword: z.string().min(1, 'Please confirm your password'),
     role: z.enum(['user', 'agent']),
   })
@@ -126,7 +129,7 @@ export default function RegisterPage() {
       </div>
 
       {/* Form Card */}
-      <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 p-4 md:p-6">
+      <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 p-4 md:p-6 hover:shadow-xl transition-shadow duration-300">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
           {/* Error Banner */}
           <AnimatePresence>
@@ -153,7 +156,7 @@ export default function RegisterPage() {
               <input
                 type="text"
                 placeholder="Enter your full name"
-                className={`w-full pl-11 pr-4 py-2.5 border rounded-2xl text-sm text-dark placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 ${
+                className={`w-full pl-11 pr-4 py-2.5 border rounded-2xl text-sm text-dark placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 hover:shadow-sm focus:shadow-md focus:shadow-primary/5 ${
                   errors.name ? 'border-red-400 bg-red-50/50' : 'border-slate-200 bg-slate-50/50 hover:border-slate-300'
                 }`}
                 {...register('name')}
@@ -170,7 +173,7 @@ export default function RegisterPage() {
               <input
                 type="email"
                 placeholder="you@example.com"
-                className={`w-full pl-11 pr-4 py-2.5 border rounded-2xl text-sm text-dark placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 ${
+                className={`w-full pl-11 pr-4 py-2.5 border rounded-2xl text-sm text-dark placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 hover:shadow-sm focus:shadow-md focus:shadow-primary/5 ${
                   errors.email ? 'border-red-400 bg-red-50/50' : 'border-slate-200 bg-slate-50/50 hover:border-slate-300'
                 }`}
                 {...register('email')}
@@ -184,11 +187,11 @@ export default function RegisterPage() {
             <div>
               <label className="block text-sm font-medium text-dark mb-1">Password</label>
               <div className="relative">
-                <HiLockClosed className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
+                <HiEyeOff className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Min 6 chars"
-                  className={`w-full pl-10 pr-9 py-2.5 border rounded-2xl text-sm text-dark placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 ${
+                  placeholder="Min 8 chars"
+                  className={`w-full pl-10 pr-9 py-2.5 border rounded-2xl text-sm text-dark placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 hover:shadow-sm focus:shadow-md focus:shadow-primary/5 ${
                     errors.password ? 'border-red-400 bg-red-50/50' : 'border-slate-200 bg-slate-50/50 hover:border-slate-300'
                   }`}
                   {...register('password')}
@@ -206,11 +209,11 @@ export default function RegisterPage() {
             <div>
               <label className="block text-sm font-medium text-dark mb-1">Confirm</label>
               <div className="relative">
-                <HiLockClosed className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
+                <HiEyeOff className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   placeholder="Repeat"
-                  className={`w-full pl-10 pr-9 py-2.5 border rounded-2xl text-sm text-dark placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 ${
+                  className={`w-full pl-10 pr-9 py-2.5 border rounded-2xl text-sm text-dark placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 hover:shadow-sm focus:shadow-md focus:shadow-primary/5 ${
                     errors.confirmPassword ? 'border-red-400 bg-red-50/50' : 'border-slate-200 bg-slate-50/50 hover:border-slate-300'
                   }`}
                   {...register('confirmPassword')}
