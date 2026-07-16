@@ -64,6 +64,7 @@ export default function AdminOverviewPage() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchStats();
   }, [fetchStats]);
 
@@ -305,9 +306,9 @@ export default function AdminOverviewPage() {
                     name,
                     percent,
                   }: {
-                    name: string;
+                    name?: string;
                     percent?: number;
-                  }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
+                  }) => `${name ?? ""} ${((percent ?? 0) * 100).toFixed(0)}%`}
                   labelLine={false}
                 >
                   {typeChartData.map((_, idx) => (
