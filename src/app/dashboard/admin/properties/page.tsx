@@ -64,7 +64,6 @@ export default function AdminPropertiesPage() {
   }, [search, statusTab, page]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchProperties();
   }, [fetchProperties]);
 

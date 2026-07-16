@@ -58,7 +58,6 @@ export default function AdminInquiriesPage() {
   }, [search, page]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchInquiries();
   }, [fetchInquiries]);
 

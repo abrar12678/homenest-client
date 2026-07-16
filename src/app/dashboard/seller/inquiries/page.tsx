@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
@@ -30,6 +30,39 @@ const fadeInUp = {
   }),
 };
 
+/** Generate smart pagination numbers with ellipsis */
+function getPaginationRange(
+  currentPage: number,
+  totalPages: number
+): (number | "...")[] {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  const pages: (number | "...")[] = [1];
+
+  if (currentPage > 3) {
+    pages.push("...");
+  }
+
+  const start = Math.max(2, currentPage - 1);
+  const end = Math.min(totalPages - 1, currentPage + 1);
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+
+  if (currentPage < totalPages - 2) {
+    pages.push("...");
+  }
+
+  if (totalPages > 1) {
+    pages.push(totalPages);
+  }
+
+  return pages;
+}
+
 export default function InquiriesPage() {
   const { user } = useAuthStore();
   const [inquiries, setInquiries] = useState<IInquiry[]>([]);
@@ -56,9 +89,9 @@ export default function InquiriesPage() {
       setTotalPages(
         data?.totalPages ||
           Math.ceil(
-            (Array.isArray(items) ? items.length : 0) / ITEMS_PER_PAGE,
+            (Array.isArray(items) ? items.length : 0) / ITEMS_PER_PAGE
           ) ||
-          1,
+          1
       );
     } catch {
       toast.error("Failed to load inquiries.");
@@ -68,7 +101,6 @@ export default function InquiriesPage() {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchInquiries();
   }, [activeTab, page]);
 
@@ -101,8 +133,8 @@ export default function InquiriesPage() {
                     },
                   ],
                 }
-              : inq,
-          ),
+              : inq
+          )
         );
       } catch {
         toast.error("Failed to send reply.");
@@ -110,7 +142,7 @@ export default function InquiriesPage() {
         setReplyingId(null);
       }
     },
-    [replyText, user],
+    [replyText, user]
   );
 
   const pendingCount = inquiries.filter((i) => i.status === "pending").length;
@@ -120,6 +152,11 @@ export default function InquiriesPage() {
     { label: "Pending", value: "pending", count: pendingCount },
     { label: "Replied", value: "replied" },
   ];
+
+  const paginationRange = useMemo(
+    () => getPaginationRange(page, totalPages),
+    [page, totalPages]
+  );
 
   // Loading skeleton
   if (loading) {
@@ -167,7 +204,7 @@ export default function InquiriesPage() {
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
       >
         <div className="flex items-center gap-3">
-          <h1 className="text-xl md:text-2xl font-bold text-[#1E293B]">
+          <h1 className="text-xl md:text-2xl font-bold text-dark">
             Inquiries
           </h1>
           {pendingCount > 0 && (
@@ -177,7 +214,9 @@ export default function InquiriesPage() {
             </span>
           )}
         </div>
-        <p className="text-sm text-[#64748B]">{inquiries.length} total</p>
+        <p className="text-sm text-muted">
+          {inquiries.length} total
+        </p>
       </motion.div>
 
       {/* Tabs */}
@@ -196,8 +235,8 @@ export default function InquiriesPage() {
             }}
             className={`relative px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${
               activeTab === tab.value
-                ? "bg-white text-[#1E40AF] shadow-sm"
-                : "text-[#64748B] hover:text-[#1E293B]"
+                ? "bg-white text-primary shadow-sm"
+                : "text-muted hover:text-dark"
             }`}
           >
             <span className="flex items-center gap-1.5">
@@ -206,8 +245,8 @@ export default function InquiriesPage() {
                 <span
                   className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
                     activeTab === tab.value
-                      ? "bg-[#1E40AF]/10 text-[#1E40AF]"
-                      : "bg-slate-200 text-[#64748B]"
+                      ? "bg-primary/10 text-primary"
+                      : "bg-slate-200 text-muted"
                   }`}
                 >
                   {tab.count}
@@ -226,17 +265,17 @@ export default function InquiriesPage() {
           transition={{ duration: 0.5, ease: "easeOut" as const }}
           className="bg-white border border-slate-100 rounded-2xl shadow-sm p-12 md:p-16 text-center"
         >
-          <div className="w-20 h-20 bg-gradient-to-br from-[#1E40AF]/10 to-[#059669]/10 rounded-full flex items-center justify-center mx-auto mb-5">
-            <HiMail className="w-10 h-10 text-[#1E40AF]/40" />
+          <div className="w-20 h-20 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-full flex items-center justify-center mx-auto mb-5">
+            <HiMail className="w-10 h-10 text-primary/40" />
           </div>
-          <h3 className="text-lg font-bold text-[#1E293B] mb-2">
+          <h3 className="text-lg font-bold text-dark mb-2">
             {activeTab === "pending"
               ? "No pending inquiries"
               : activeTab === "replied"
                 ? "No replied inquiries"
                 : "No inquiries yet"}
           </h3>
-          <p className="text-sm text-[#64748B] max-w-md mx-auto">
+          <p className="text-sm text-muted max-w-md mx-auto">
             {activeTab === "all"
               ? "When buyers send you inquiries about your properties, they'll appear here."
               : `You don't have any ${activeTab} inquiries at the moment.`}
@@ -248,7 +287,7 @@ export default function InquiriesPage() {
       {inquiries.length > 0 && (
         <div className="space-y-4">
           {inquiries.map((inquiry, idx) => {
-            const hasReplies = inquiry.replies.length > 0;
+            const hasReplies = inquiry.replies?.length > 0;
             const isReplyOpen = openReplyId === inquiry._id;
 
             return (
@@ -265,20 +304,20 @@ export default function InquiriesPage() {
                   {/* Top row: buyer info + status */}
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-[#1E40AF]/10 flex items-center justify-center shrink-0">
-                        <HiUser className="w-5 h-5 text-[#1E40AF]" />
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <HiUser className="w-5 h-5 text-primary" />
                       </div>
                       <div>
-                        <h3 className="text-sm font-semibold text-[#1E293B]">
+                        <h3 className="text-sm font-semibold text-dark">
                           {inquiry.fromUserName}
                         </h3>
-                        <p className="text-xs text-[#64748B]">
+                        <p className="text-xs text-muted">
                           {inquiry.fromUserEmail}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className="text-[11px] text-[#64748B]">
+                      <span className="text-[11px] text-muted">
                         {formatDate(inquiry.createdAt)}
                       </span>
                       <span
@@ -301,21 +340,21 @@ export default function InquiriesPage() {
                   {/* Property link */}
                   <Link
                     href={`/properties/${inquiry.propertyId}`}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-[#1E40AF] hover:text-[#1E3A8A] transition-colors mb-2"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors mb-2 cursor-pointer"
                   >
                     <HiLocationMarker className="w-3.5 h-3.5" />
                     {inquiry.propertyTitle}
                   </Link>
 
                   {/* Original Message */}
-                  <div className="bg-slate-50 rounded-2xl p-3.5 text-sm text-[#1E293B] leading-relaxed">
+                  <div className="bg-slate-50 rounded-2xl p-3.5 text-sm text-dark leading-relaxed">
                     {inquiry.message}
                   </div>
 
                   {/* Replies Thread */}
                   {hasReplies && (
                     <div className="mt-3 space-y-2.5">
-                      <p className="text-xs font-semibold text-[#64748B] uppercase tracking-wide">
+                      <p className="text-xs font-semibold text-muted uppercase tracking-wide">
                         Replies ({inquiry.replies.length})
                       </p>
                       {inquiry.replies.map((reply, rIdx) => (
@@ -323,7 +362,7 @@ export default function InquiriesPage() {
                           key={rIdx}
                           className={`rounded-2xl p-3.5 text-sm leading-relaxed ${
                             reply.repliedBy === user?._id
-                              ? "bg-[#1E40AF]/5 border border-[#1E40AF]/10"
+                              ? "bg-primary/5 border border-primary/10"
                               : "bg-green-50/50 border border-green-100"
                           }`}
                         >
@@ -331,22 +370,22 @@ export default function InquiriesPage() {
                             <span
                               className={`text-xs font-semibold ${
                                 reply.repliedBy === user?._id
-                                  ? "text-[#1E40AF]"
-                                  : "text-[#059669]"
+                                  ? "text-primary"
+                                  : "text-secondary"
                               }`}
                             >
                               {reply.repliedByName}
                               {reply.repliedBy === user?._id && (
-                                <span className="text-[#64748B] font-normal ml-1">
+                                <span className="text-muted font-normal ml-1">
                                   (You)
                                 </span>
                               )}
                             </span>
-                            <span className="text-[11px] text-[#64748B]">
+                            <span className="text-[11px] text-muted">
                               {formatDate(reply.createdAt)}
                             </span>
                           </div>
-                          <p className="text-[#1E293B]">{reply.message}</p>
+                          <p className="text-dark">{reply.message}</p>
                         </div>
                       ))}
                     </div>
@@ -360,7 +399,7 @@ export default function InquiriesPage() {
                           setOpenReplyId(inquiry._id);
                           setReplyText("");
                         }}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-[#1E40AF] bg-[#1E40AF]/5 hover:bg-[#1E40AF]/10 transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-primary bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer"
                       >
                         <HiReply className="w-4 h-4" />
                         {hasReplies ? "Send Another Reply" : "Reply"}
@@ -372,7 +411,7 @@ export default function InquiriesPage() {
                           onChange={(e) => setReplyText(e.target.value)}
                           placeholder="Type your reply here..."
                           rows={3}
-                          className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 text-sm text-[#1E293B] placeholder:text-[#64748B]/60 focus:outline-none focus:ring-2 focus:ring-[#1E40AF]/20 focus:border-[#1E40AF] focus:bg-white transition-all resize-none"
+                          className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 text-sm text-dark placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all resize-none"
                         />
                         <div className="flex items-center gap-2 justify-end">
                           <button
@@ -380,7 +419,7 @@ export default function InquiriesPage() {
                               setOpenReplyId(null);
                               setReplyText("");
                             }}
-                            className="px-4 py-2 rounded-xl text-xs font-medium text-[#64748B] bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
+                            className="px-4 py-2 rounded-xl text-xs font-medium text-muted bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
                           >
                             Cancel
                           </button>
@@ -389,7 +428,7 @@ export default function InquiriesPage() {
                             disabled={
                               replyingId === inquiry._id || !replyText.trim()
                             }
-                            className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-semibold text-white bg-[#1E40AF] hover:bg-[#1E3A8A] transition-colors disabled:opacity-50 cursor-pointer shadow-sm shadow-[#1E40AF]/20"
+                            className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-semibold text-white bg-primary hover:bg-primary-dark transition-colors disabled:opacity-50 cursor-pointer shadow-sm shadow-primary/20"
                           >
                             {replyingId === inquiry._id ? (
                               <>
@@ -433,7 +472,7 @@ export default function InquiriesPage() {
         </div>
       )}
 
-      {/* Pagination */}
+      {/* Pagination — Smart */}
       {totalPages > 1 && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -444,32 +483,41 @@ export default function InquiriesPage() {
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="inline-flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-medium text-[#1E293B] bg-white border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            className="inline-flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-medium text-dark bg-white border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
           >
             <HiChevronLeft className="w-4 h-4" />
             Previous
           </button>
 
           <div className="flex items-center gap-1">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-              <button
-                key={p}
-                onClick={() => setPage(p)}
-                className={`w-9 h-9 rounded-xl text-sm font-medium transition-colors cursor-pointer ${
-                  page === p
-                    ? "bg-[#1E40AF] text-white shadow-sm shadow-[#1E40AF]/20"
-                    : "text-[#64748B] bg-white border border-slate-200 hover:bg-slate-50"
-                }`}
-              >
-                {p}
-              </button>
-            ))}
+            {paginationRange.map((p, idx) =>
+              p === "..." ? (
+                <span
+                  key={`ellipsis-${idx}`}
+                  className="w-9 h-9 flex items-center justify-center text-sm text-muted"
+                >
+                  …
+                </span>
+              ) : (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={`w-9 h-9 rounded-xl text-sm font-medium transition-colors cursor-pointer ${
+                    page === p
+                      ? "bg-primary text-white shadow-sm shadow-primary/20"
+                      : "text-muted bg-white border border-slate-200 hover:bg-slate-50"
+                  }`}
+                >
+                  {p}
+                </button>
+              )
+            )}
           </div>
 
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
-            className="inline-flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-medium text-[#1E293B] bg-white border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            className="inline-flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-medium text-dark bg-white border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
           >
             Next
             <HiChevronRight className="w-4 h-4" />

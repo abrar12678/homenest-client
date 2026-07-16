@@ -128,7 +128,6 @@ export default function SellerProfilePage() {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     refreshUser();
     fetchStats();
   }, [refreshUser]);

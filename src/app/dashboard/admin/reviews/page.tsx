@@ -69,7 +69,6 @@ export default function AdminReviewsPage() {
   }, [search, page]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchReviews();
   }, [fetchReviews]);
 
