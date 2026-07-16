@@ -81,6 +81,7 @@ export default function MyVisitsPage() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchVisits(currentPage, filter);
   }, [currentPage, filter, fetchVisits]);
 

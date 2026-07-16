@@ -13,12 +13,9 @@ import {
   HiUsers,
   HiOfficeBuilding,
   HiStar,
+  HiChat,
   HiCreditCard,
-  HiArrowLeft,
-  HiCalendar,
-  HiClock,
-  HiChatAlt,
-  HiCash,
+  HiX,
 } from "react-icons/hi";
 
 interface SidebarProps {
@@ -34,29 +31,32 @@ interface NavItem {
 
 const buyerNavItems: NavItem[] = [
   { href: "/dashboard/buyer", label: "Overview", icon: HiHome },
-  { href: "/dashboard/buyer/deals", label: "My Deals", icon: HiCash },
   { href: "/dashboard/buyer/favorites", label: "My Favorites", icon: HiHeart },
   { href: "/dashboard/buyer/inquiries", label: "My Inquiries", icon: HiMail },
-  { href: "/dashboard/buyer/visits", label: "My Visits", icon: HiCalendar },
   { href: "/dashboard/buyer/profile", label: "Profile", icon: HiUser },
 ];
 
 const agentNavItems: NavItem[] = [
   { href: "/dashboard/seller", label: "Overview", icon: HiHome },
-  { href: "/dashboard/seller/listings", label: "My Listings", icon: HiClipboardList },
-  { href: "/dashboard/seller/deals", label: "Deal Offers", icon: HiCash },
+  {
+    href: "/dashboard/seller/listings",
+    label: "My Listings",
+    icon: HiClipboardList,
+  },
   { href: "/dashboard/seller/inquiries", label: "Inquiries", icon: HiMail },
-  { href: "/dashboard/seller/visits", label: "Visit Requests", icon: HiClock },
   { href: "/dashboard/seller/profile", label: "Profile", icon: HiUser },
 ];
 
 const adminNavItems: NavItem[] = [
   { href: "/dashboard/admin", label: "Overview", icon: HiHome },
   { href: "/dashboard/admin/users", label: "Users", icon: HiUsers },
-  { href: "/dashboard/admin/properties", label: "Properties", icon: HiOfficeBuilding },
-  { href: "/dashboard/admin/deals", label: "Deals", icon: HiCash },
-  { href: "/dashboard/admin/inquiries", label: "Inquiries", icon: HiChatAlt },
+  {
+    href: "/dashboard/admin/properties",
+    label: "Properties",
+    icon: HiOfficeBuilding,
+  },
   { href: "/dashboard/admin/reviews", label: "Reviews", icon: HiStar },
+  { href: "/dashboard/admin/messages", label: "Messages", icon: HiChat },
   { href: "/dashboard/admin/payments", label: "Payments", icon: HiCreditCard },
 ];
 
@@ -85,7 +85,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         : buyerNavItems;
 
   const isActive = (href: string) => {
-    if (href === `/dashboard/${role === "agent" ? "seller" : role === "admin" ? "admin" : "buyer"}`) {
+    if (
+      href ===
+      `/dashboard/${role === "agent" ? "seller" : role === "admin" ? "admin" : "buyer"}`
+    ) {
       return pathname === href;
     }
     return pathname.startsWith(href);
@@ -125,7 +128,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     : "text-dark hover:text-primary hover:bg-primary/5"
                 }`}
               >
-                <item.icon className={`w-5 h-5 shrink-0 ${active ? "text-white" : ""}`} />
+                <item.icon
+                  className={`w-5 h-5 shrink-0 ${active ? "text-white" : ""}`}
+                />
                 {item.label}
               </Link>
             </motion.div>
@@ -151,14 +156,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               </span>
             </div>
           </div>
-          <Link
-            href="/"
+          <button
             onClick={onClose}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-muted hover:text-primary hover:bg-primary/5 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-muted hover:text-primary hover:bg-primary/5 transition-colors w-full cursor-pointer lg:hidden"
           >
-            <HiArrowLeft className="w-4 h-4" />
-            Back to Home
-          </Link>
+            <HiX className="w-4 h-4" />
+            Close Menu
+          </button>
         </div>
       )}
     </div>
@@ -166,8 +170,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   return (
     <>
-      {/* Desktop sidebar (lg+) */}
-      <aside className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 w-64 bg-white border-r border-slate-100 z-30">
+      {/* Desktop sidebar (lg+) — always visible, below header */}
+      <aside className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:top-16 lg:left-0 w-64 bg-white border-r border-slate-100 z-20">
         {sidebarContent}
       </aside>
 
@@ -190,7 +194,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ duration: 0.3, ease: "easeOut" as const }}
-              className="fixed inset-y-0 left-0 w-64 bg-white shadow-2xl z-50 lg:hidden"
+              className="fixed inset-y-0 left-0 w-72 sm:w-64 bg-white shadow-2xl z-50 lg:hidden"
             >
               {sidebarContent}
             </motion.aside>

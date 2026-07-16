@@ -136,6 +136,7 @@ export default function AdminDealsPage() {
   }, [search, activeTab, page]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchDeals();
   }, [fetchDeals]);
 

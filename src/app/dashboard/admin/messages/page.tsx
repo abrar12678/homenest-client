@@ -55,6 +55,7 @@ export default function AdminMessagesPage() {
   }, [search, page]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchMessages();
   }, [fetchMessages]);
 

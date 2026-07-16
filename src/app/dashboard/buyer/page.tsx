@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -16,15 +16,11 @@ import {
   HiChevronRight,
   HiLocationMarker,
   HiPhotograph,
-  HiClock,
-  HiCalendar,
 } from "react-icons/hi";
-import { getFavorites, getSentInquiries, getProperties, getMyReviewCount, getMyVisits } from "@/lib/api";
+import { getFavorites, getSentInquiries, getProperties } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
-import { formatPrice, formatDate } from "@/lib/utils";
-import type { IProperty, IInquiry } from "@/types";
-
-/* ─── Animation Variants ─── */
+import { formatPrice } from "@/lib/utils";
+import type { IProperty } from "@/types";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -43,57 +39,34 @@ const staggerContainer = {
   },
 };
 
-/* ─── Activity Types ─── */
-
-interface ActivityItem {
-  id: string;
-  type: "favorite" | "inquiry";
-  title: string;
-  propertyId: string;
-  createdAt: string;
-}
-
-/* ─── Component ─── */
-
 export default function BuyerDashboardPage() {
   const { user } = useAuthStore();
   const [favorites, setFavorites] = useState<IProperty[]>([]);
-  const [inquiries, setInquiries] = useState<IInquiry[]>([]);
   const [inquiriesCount, setInquiriesCount] = useState(0);
-  const [reviewCount, setReviewCount] = useState(0);
-  const [visitsCount, setVisitsCount] = useState(0);
   const [recentProperties, setRecentProperties] = useState<IProperty[]>([]);
   const [loading, setLoading] = useState(true);
-
-  /* ── Data Fetching ── */
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const [favRes, inqRes, propsRes, revRes, visRes] = await Promise.allSettled([
+      const [favRes, inqRes, propsRes] = await Promise.allSettled([
         getFavorites(),
-        getSentInquiries({ limit: "5" }),
+        getSentInquiries(),
         getProperties({ sortBy: "newest", limit: "3" }),
-        getMyReviewCount(),
-        getMyVisits({ limit: "1" }),
       ]);
 
       if (favRes.status === "fulfilled") {
         const favData = favRes.value.data?.data;
         setFavorites(
-          Array.isArray(favData) ? favData : favData?.properties || []
+          Array.isArray(favData) ? favData : favData?.properties || [],
         );
       }
 
       if (inqRes.status === "fulfilled") {
         const inqData = inqRes.value.data?.data;
         if (inqData) {
-          const inqList = Array.isArray(inqData)
-            ? inqData
-            : inqData.inquiries || [];
-          setInquiries(inqList);
           setInquiriesCount(
-            Array.isArray(inqData) ? inqData.length : inqData.total || 0
+            Array.isArray(inqData) ? inqData.length : inqData.total || 0,
           );
         }
       }
@@ -104,18 +77,6 @@ export default function BuyerDashboardPage() {
           ? propsData
           : propsData?.properties || [];
         setRecentProperties(propsList.slice(0, 3));
-      }
-
-      if (revRes.status === "fulfilled") {
-        const revData = revRes.value.data?.data;
-        setReviewCount(revData?.count ?? 0);
-      }
-
-      if (visRes.status === "fulfilled") {
-        const visData = visRes.value.data?.data;
-        setVisitsCount(
-          visData?.total ?? (Array.isArray(visData?.visits) ? visData.visits.length : 0)
-        );
       }
     } catch {
       toast.error("Failed to load dashboard data.");
@@ -129,77 +90,29 @@ export default function BuyerDashboardPage() {
     fetchDashboardData();
   }, []);
 
-  /* ── Derived: Activity Timeline ── */
-
-  const activityItems: ActivityItem[] = useMemo(() => {
-    const favActivities: ActivityItem[] = [...favorites]
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )
-      .slice(0, 3)
-      .map((fav) => ({
-        id: `fav-${fav._id}`,
-        type: "favorite" as const,
-        title: `Saved "${fav.title}"`,
-        propertyId: fav._id,
-        createdAt: fav.createdAt,
-      }));
-
-    const inqActivities: ActivityItem[] = [...inquiries]
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )
-      .slice(0, 2)
-      .map((inq) => ({
-        id: `inq-${inq._id}`,
-        type: "inquiry" as const,
-        title: `Inquired about "${inq.propertyTitle}"`,
-        propertyId: inq.propertyId,
-        createdAt: inq.createdAt,
-      }));
-
-    return [...favActivities, ...inqActivities].sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-  }, [favorites, inquiries]);
-
-  /* ── Stat Cards Data ── */
-
   const stats = [
     {
       label: "Total Favorites",
-      value: loading ? "—" : String(favorites.length),
+      value: loading ? "—" : favorites.length,
       icon: HiHeart,
       color: "bg-rose-100 text-rose-600",
       hoverBorder: "hover:border-rose-200",
     },
     {
       label: "Inquiries Sent",
-      value: loading ? "—" : String(inquiriesCount),
+      value: loading ? "—" : inquiriesCount,
       icon: HiMail,
       color: "bg-amber-100 text-amber-600",
       hoverBorder: "hover:border-amber-200",
     },
     {
       label: "Reviews Given",
-      value: loading ? "—" : String(reviewCount),
+      value: "—",
       icon: HiStar,
       color: "bg-emerald-100 text-emerald-600",
       hoverBorder: "hover:border-emerald-200",
     },
-    {
-      label: "Visits Scheduled",
-      value: loading ? "—" : String(visitsCount),
-      icon: HiCalendar,
-      color: "bg-blue-100 text-blue-600",
-      hoverBorder: "hover:border-blue-200",
-    },
   ];
-
-  /* ── Quick Actions Data ── */
 
   const quickActions = [
     {
@@ -219,14 +132,6 @@ export default function BuyerDashboardPage() {
       shadow: "shadow-rose-500/20",
     },
     {
-      label: "My Visits",
-      description: "Track scheduled property visits",
-      href: "/dashboard/buyer/visits",
-      icon: HiCalendar,
-      gradient: "from-emerald-500 to-teal-500",
-      shadow: "shadow-emerald-500/20",
-    },
-    {
       label: "My Inquiries",
       description: "Track sent inquiries & replies",
       href: "/dashboard/buyer/inquiries",
@@ -236,17 +141,15 @@ export default function BuyerDashboardPage() {
     },
   ];
 
-  /* ── Render ── */
-
   return (
-    <div className="space-y-8">
-      {/* ── Welcome Banner ── */}
-      <section className="relative bg-gradient-to-br from-primary-dark via-primary to-primary-light rounded-2xl py-10 md:py-14 overflow-hidden">
+    <div className="space-y-0">
+      {/* Welcome Banner — extends full width using negative margin */}
+      <section className="relative bg-gradient-to-br from-primary-dark via-primary to-primary-light py-10 md:py-14 overflow-hidden -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8 mb-6">
         <div className="absolute top-0 right-0 w-80 h-80 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
         <div className="absolute bottom-0 left-0 w-56 h-56 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/3" />
         <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-white/3 rounded-full -translate-x-1/2 -translate-y-1/2" />
 
-        <div className="relative px-6 md:px-10">
+        <div className="relative max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -259,286 +162,217 @@ export default function BuyerDashboardPage() {
               Here&apos;s an overview of your property search activity. Find
               your dream home today!
             </p>
-            {user?.createdAt && (
-              <p className="text-blue-100/70 text-xs mt-3 flex items-center gap-1.5">
-                <HiClock className="w-3.5 h-3.5" />
-                Member since {formatDate(user.createdAt)}
-              </p>
-            )}
           </motion.div>
         </div>
       </section>
 
-      {/* ── Stat Cards ── */}
-      <section>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 md:gap-6">
-          {loading
-            ? [1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="bg-white border border-slate-100 rounded-2xl p-6"
-                >
-                  <div className="flex items-center gap-4">
-                    <Skeleton circle width={56} height={56} />
-                    <div className="flex-1">
-                      <Skeleton height={14} width={100} />
-                      <Skeleton height={28} width={60} className="mt-2" />
-                    </div>
-                  </div>
-                </div>
-              ))
-            : stats.map((stat, idx) => (
-                <motion.div
-                  key={stat.label}
-                  custom={idx}
-                  variants={fadeInUp}
-                  initial="hidden"
-                  animate="visible"
-                  className={`group bg-white border border-slate-100 rounded-2xl p-5 md:p-6 hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-300 hover:-translate-y-1 ${stat.hoverBorder}`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={`w-14 h-14 rounded-2xl ${stat.color} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300`}
-                    >
-                      <stat.icon className="w-7 h-7" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted font-medium">
-                        {stat.label}
-                      </p>
-                      <p className="text-2xl font-bold text-dark">
-                        {stat.value}
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-        </div>
-      </section>
-
-      {/* ── Quick Actions ── */}
-      <section>
-        <h2 className="text-lg md:text-xl font-bold text-dark mb-5">
-          Quick Actions
-        </h2>
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          animate="visible"
-          className="grid grid-cols-2 sm:grid-cols-4 gap-4 md:gap-6"
-        >
-          {quickActions.map((action) => (
-            <motion.div key={action.label} variants={fadeInUp} custom={0}>
-              <Link href={action.href} className="block group cursor-pointer">
-                <div className="relative bg-white border border-slate-100 rounded-2xl p-5 md:p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+      <div className="space-y-10">
+        {/* Stat Cards */}
+        <section>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+            {loading
+              ? [1, 2, 3].map((i) => (
                   <div
-                    className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-br ${action.gradient} opacity-5 rounded-bl-full`}
-                  />
-                  <div
-                    className={`w-12 h-12 rounded-xl bg-gradient-to-br ${action.gradient} ${action.shadow} shadow-lg flex items-center justify-center mb-4`}
+                    key={i}
+                    className="bg-white border border-slate-100 rounded-2xl p-6"
                   >
-                    <action.icon className="w-6 h-6 text-white" />
+                    <div className="flex items-center gap-4">
+                      <Skeleton circle width={56} height={56} />
+                      <div className="flex-1">
+                        <Skeleton height={14} width={100} />
+                        <Skeleton height={28} width={60} className="mt-2" />
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="text-sm font-bold text-dark mb-1 group-hover:text-primary transition-colors">
-                    {action.label}
-                  </h3>
-                  <p className="text-xs text-muted">{action.description}</p>
-                  <div className="flex items-center gap-1 mt-3 text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <span>Go now</span>
-                    <HiChevronRight className="w-3.5 h-3.5" />
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </motion.div>
-      </section>
+                ))
+              : stats.map((stat, idx) => (
+                  <motion.div
+                    key={stat.label}
+                    custom={idx}
+                    variants={fadeInUp}
+                    initial="hidden"
+                    animate="visible"
+                    className={`group bg-white border border-slate-100 rounded-2xl p-5 md:p-6 hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-300 hover:-translate-y-1 ${stat.hoverBorder}`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div
+                        className={`w-14 h-14 rounded-2xl ${stat.color} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300`}
+                      >
+                        <stat.icon className="w-7 h-7" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted font-medium">
+                          {stat.label}
+                        </p>
+                        <p className="text-2xl font-bold text-dark">
+                          {stat.value}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+          </div>
+        </section>
 
-      {/* ── Activity Timeline ── */}
-      {!loading && activityItems.length > 0 && (
+        {/* Quick Actions */}
         <section>
           <h2 className="text-lg md:text-xl font-bold text-dark mb-5">
-            Recent Activity
+            Quick Actions
           </h2>
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" as const }}
-            className="bg-white border border-slate-100 rounded-2xl p-5 md:p-6"
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6"
           >
-            <div className="space-y-4">
-              {activityItems.map((item, idx) => (
-                <motion.div
-                  key={item.id}
-                  custom={idx}
-                  variants={fadeInUp}
-                  initial="hidden"
-                  animate="visible"
-                >
-                  <Link
-                    href={`/properties/${item.propertyId}`}
-                    className="flex items-start gap-4 group cursor-pointer"
-                  >
+            {quickActions.map((action) => (
+              <motion.div key={action.label} variants={fadeInUp} custom={0}>
+                <Link href={action.href} className="block group">
+                  <div className="relative bg-white border border-slate-100 rounded-2xl p-5 md:p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden">
                     <div
-                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
-                        item.type === "favorite"
-                          ? "bg-rose-100 text-rose-500"
-                          : "bg-amber-100 text-amber-600"
-                      }`}
+                      className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-br ${action.gradient} opacity-5 rounded-bl-full`}
+                    />
+                    <div
+                      className={`w-12 h-12 rounded-xl bg-gradient-to-br ${action.gradient} ${action.shadow} shadow-lg flex items-center justify-center mb-4`}
                     >
-                      {item.type === "favorite" ? (
-                        <HiHeart className="w-4 h-4" />
-                      ) : (
-                        <HiMail className="w-4 h-4" />
-                      )}
+                      <action.icon className="w-6 h-6 text-white" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-dark group-hover:text-primary transition-colors line-clamp-1">
-                        {item.title}
-                      </p>
-                      <p className="text-xs text-muted mt-0.5">
-                        {formatDate(item.createdAt)}
-                      </p>
-                    </div>
-                    <HiChevronRight className="w-4 h-4 text-muted group-hover:text-primary transition-colors shrink-0 mt-1" />
-                  </Link>
-                  {idx < activityItems.length - 1 && (
-                    <div className="ml-[18px] mt-4 mb-1 border-l-2 border-slate-100" />
-                  )}
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </section>
-      )}
-
-      {/* ── Recently Viewed Properties ── */}
-      <section>
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg md:text-xl font-bold text-dark">
-            Recently Viewed
-          </h2>
-          <Link
-            href="/properties"
-            className="text-sm font-semibold text-primary hover:text-primary-dark transition-colors flex items-center gap-1 cursor-pointer"
-          >
-            View all
-            <HiChevronRight className="w-4 h-4" />
-          </Link>
-        </div>
-
-        {/* Loading Skeleton */}
-        {loading && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="bg-white rounded-2xl border border-slate-100 overflow-hidden"
-              >
-                <Skeleton height={180} className="w-full" />
-                <div className="p-4 space-y-2.5">
-                  <Skeleton height={18} width="50%" />
-                  <Skeleton height={16} width="80%" />
-                  <Skeleton height={14} width="40%" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Empty State */}
-        {!loading && recentProperties.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" as const }}
-            className="bg-white rounded-2xl border border-slate-100 p-10 md:p-14 text-center"
-          >
-            <div className="w-20 h-20 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-full flex items-center justify-center mx-auto mb-5">
-              <HiCollection className="w-10 h-10 text-primary/40" />
-            </div>
-            <h3 className="text-lg font-bold text-dark mb-2">
-              No properties to show
-            </h3>
-            <p className="text-sm text-muted max-w-sm mx-auto mb-6">
-              Start exploring properties and your recently viewed ones will
-              appear here.
-            </p>
-            <Link
-              href="/properties"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-light text-white font-semibold rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 text-sm cursor-pointer"
-            >
-              <HiSearch className="w-4 h-4" />
-              Browse Properties
-            </Link>
-          </motion.div>
-        )}
-
-        {/* Property Cards */}
-        {!loading && recentProperties.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {recentProperties.map((property, idx) => {
-              const imageUrl = property.images?.[0] || "";
-              return (
-                <motion.div
-                  key={property._id}
-                  custom={idx}
-                  variants={fadeInUp}
-                  initial="hidden"
-                  animate="visible"
-                  className="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden group"
-                >
-                  <Link
-                    href={`/properties/${property._id}`}
-                    className="block cursor-pointer"
-                  >
-                    <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
-                      {imageUrl ? (
-                        <Image
-                          src={imageUrl}
-                          alt={property.title}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center">
-                          <HiPhotograph className="w-10 h-10 text-slate-400" />
-                        </div>
-                      )}
-                    </div>
-                  </Link>
-                  <div className="p-4">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <span className="text-base font-bold text-secondary">
-                        {formatPrice(property.price, property.priceType)}
-                      </span>
-                    </div>
-                    <Link
-                      href={`/properties/${property._id}`}
-                      className="cursor-pointer"
-                    >
-                      <h3 className="text-sm font-semibold text-dark line-clamp-1 mb-1 hover:text-primary transition-colors">
-                        {property.title}
-                      </h3>
-                    </Link>
-                    <div className="flex items-center gap-1 text-muted">
-                      <HiLocationMarker className="w-3.5 h-3.5 shrink-0" />
-                      <span className="text-xs truncate">
-                        {property.location?.area}
-                        {property.location?.area && property.location?.city
-                          ? ", "
-                          : ""}
-                        {property.location?.city}
-                      </span>
+                    <h3 className="text-sm font-bold text-dark mb-1 group-hover:text-primary transition-colors">
+                      {action.label}
+                    </h3>
+                    <p className="text-xs text-muted">{action.description}</p>
+                    <div className="flex items-center gap-1 mt-3 text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <span>Go now</span>
+                      <HiChevronRight className="w-3.5 h-3.5" />
                     </div>
                   </div>
-                </motion.div>
-              );
-            })}
+                </Link>
+              </motion.div>
+            ))}
+          </motion.div>
+        </section>
+
+        {/* Recently Viewed */}
+        <section>
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-lg md:text-xl font-bold text-dark">
+              Recently Viewed
+            </h2>
+            <Link
+              href="/properties"
+              className="text-sm font-semibold text-primary hover:text-primary-dark transition-colors flex items-center gap-1"
+            >
+              View all
+              <HiChevronRight className="w-4 h-4" />
+            </Link>
           </div>
-        )}
-      </section>
+
+          {/* Loading Skeleton */}
+          {loading && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="bg-white rounded-2xl border border-slate-100 overflow-hidden"
+                >
+                  <Skeleton height={180} className="w-full" />
+                  <div className="p-4 space-y-2.5">
+                    <Skeleton height={18} width="50%" />
+                    <Skeleton height={16} width="80%" />
+                    <Skeleton height={14} width="40%" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!loading && recentProperties.length === 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" as const }}
+              className="bg-white rounded-2xl border border-slate-100 p-10 md:p-14 text-center"
+            >
+              <div className="w-20 h-20 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-full flex items-center justify-center mx-auto mb-5">
+                <HiCollection className="w-10 h-10 text-primary/40" />
+              </div>
+              <h3 className="text-lg font-bold text-dark mb-2">
+                No properties to show
+              </h3>
+              <p className="text-sm text-muted max-w-sm mx-auto mb-6">
+                Start exploring properties and your recently viewed ones will
+                appear here.
+              </p>
+              <Link
+                href="/properties"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-light text-white font-semibold rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 text-sm"
+              >
+                <HiSearch className="w-4 h-4" />
+                Browse Properties
+              </Link>
+            </motion.div>
+          )}
+
+          {/* Property Cards */}
+          {!loading && recentProperties.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              {recentProperties.map((property, idx) => {
+                const imageUrl = property.images?.[0] || "";
+                return (
+                  <motion.div
+                    key={property._id}
+                    custom={idx}
+                    variants={fadeInUp}
+                    initial="hidden"
+                    animate="visible"
+                    className="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden group"
+                  >
+                    <Link
+                      href={`/properties/${property._id}`}
+                      className="block"
+                    >
+                      <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
+                        {imageUrl ? (
+                          <Image
+                            src={imageUrl}
+                            alt={property.title}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center">
+                            <HiPhotograph className="w-10 h-10 text-slate-400" />
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+                    <div className="p-4">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className="text-base font-bold text-secondary">
+                          {formatPrice(property.price, property.priceType)}
+                        </span>
+                      </div>
+                      <Link href={`/properties/${property._id}`}>
+                        <h3 className="text-sm font-semibold text-dark line-clamp-1 mb-1 hover:text-primary transition-colors">
+                          {property.title}
+                        </h3>
+                      </Link>
+                      <div className="flex items-center gap-1 text-muted">
+                        <HiLocationMarker className="w-3.5 h-3.5 shrink-0" />
+                        <span className="text-xs truncate">
+                          {property.location.city}
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

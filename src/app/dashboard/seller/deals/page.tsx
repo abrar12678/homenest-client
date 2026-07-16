@@ -294,6 +294,7 @@ export default function SellerDealsPage() {
   }, [page, activeTab]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchDeals();
   }, [fetchDeals]);
 

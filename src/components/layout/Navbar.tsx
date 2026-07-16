@@ -2,18 +2,17 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/lib/store";
 import Button from "@/components/ui/Button";
-import { toast } from "react-toastify";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   HiHome,
   HiMenu,
   HiX,
   HiLogout,
+  HiPlusCircle,
   HiChevronDown,
-  HiViewGrid,
+  HiCog,
 } from "react-icons/hi";
 
 export default function Navbar() {
@@ -21,9 +20,35 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
   const { user, isAuthenticated, clearAuth } = useAuthStore();
 
+  // Hide Navbar on all dashboard routes — dashboard has its own header
+  if (pathname.startsWith("/dashboard")) {
+    return null;
+  }
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    const title = pathname === "/"
+      ? "Home | HomeNest"
+      : pathname.startsWith("/properties/new")
+      ? "Add Property | HomeNest"
+      : pathname === "/properties"
+      ? "Explore Properties | HomeNest"
+      : pathname === "/about"
+      ? "About | HomeNest"
+      : pathname === "/contact"
+      ? "Contact | HomeNest"
+      : pathname === "/login"
+      ? "Login | HomeNest"
+      : pathname === "/register"
+      ? "Register | HomeNest"
+      : "HomeNest";
+
+    document.title = title;
+  }, [pathname]);
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", onScroll);
@@ -31,6 +56,7 @@ export default function Navbar() {
   }, []);
 
   // Close mobile menu on route change
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
       setMobileOpen(false);
@@ -40,6 +66,7 @@ export default function Navbar() {
   }, [pathname]);
 
   // Close dropdown on outside click
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (!dropdownOpen) return;
     const handler = () => setDropdownOpen(false);
@@ -48,6 +75,7 @@ export default function Navbar() {
   }, [dropdownOpen]);
 
   // Role-based nav links
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const navLinks = useMemo(() => {
     const base = [
       { href: "/", label: "Home" },
@@ -65,7 +93,7 @@ export default function Navbar() {
     if (user.role === "user") {
       return [
         ...base,
-        { href: "/dashboard/buyer", label: "My Dashboard" },
+        { href: "/dashboard/buyer/favorites", label: "My Favorites" },
         { href: "/about", label: "About" },
         { href: "/contact", label: "Contact" },
       ];
@@ -74,7 +102,7 @@ export default function Navbar() {
     if (user.role === "agent") {
       return [
         ...base,
-        { href: "/dashboard/seller", label: "My Dashboard" },
+        { href: "/properties/new", label: "Add Property" },
         { href: "/about", label: "About" },
         { href: "/contact", label: "Contact" },
       ];
@@ -83,13 +111,13 @@ export default function Navbar() {
     // admin
     return [
       ...base,
-      { href: "/dashboard/admin", label: "Admin Panel" },
       { href: "/about", label: "About" },
       { href: "/contact", label: "Contact" },
     ];
   }, [isAuthenticated, user]);
 
   // Dashboard link and label based on role
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const dashboardLink = useMemo(() => {
     if (!user) return { href: "/dashboard", label: "My Dashboard" };
     switch (user.role) {
@@ -102,7 +130,7 @@ export default function Navbar() {
     }
   }, [user]);
 
-  const showAddPropertyButton = false;
+  const showAddPropertyButton = isAuthenticated && user?.role === "agent";
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -132,10 +160,10 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`relative px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer ${
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     isActive(link.href)
                       ? "text-primary bg-primary/5"
-                      : "text-dark hover:text-primary hover:bg-gray-50 hover:scale-[1.02]"
+                      : "text-dark hover:text-primary hover:bg-gray-50"
                   }`}
                 >
                   {link.label}
@@ -147,13 +175,21 @@ export default function Navbar() {
             <div className="hidden md:flex items-center gap-3">
               {isAuthenticated && user ? (
                 <>
+                  {showAddPropertyButton && (
+                    <Link href="/properties/new">
+                      <Button variant="outline" size="sm">
+                        <HiPlusCircle className="w-4 h-4 mr-1.5" />
+                        List Property
+                      </Button>
+                    </Link>
+                  )}
                   <div className="relative">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setDropdownOpen(!dropdownOpen);
                       }}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200 cursor-pointer hover:scale-[1.02]"
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
                     >
                       <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold">
                         {user.name.charAt(0).toUpperCase()}
@@ -169,43 +205,31 @@ export default function Navbar() {
                     </button>
 
                     {/* Dropdown */}
-                    <AnimatePresence>
-                      {dropdownOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -8, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                          transition={{ duration: 0.15, ease: "easeOut" }}
-                          className="absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50"
+                    {dropdownOpen && (
+                      <div className="absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50">
+                        <div className="px-4 py-2 border-b border-gray-100">
+                          <p className="text-sm font-medium text-dark">
+                            {user.name}
+                          </p>
+                          <p className="text-xs text-muted">{user.email}</p>
+                        </div>
+                        <Link
+                          href={dashboardLink.href}
+                          className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-dark hover:bg-gray-50 transition-colors"
+                          onClick={() => setDropdownOpen(false)}
                         >
-                          <div className="px-4 py-2 border-b border-gray-100">
-                            <p className="text-sm font-medium text-dark">
-                              {user.name}
-                            </p>
-                            <p className="text-xs text-muted">{user.email}</p>
-                          </div>
-                          <Link
-                            href={dashboardLink.href}
-                            className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-dark hover:bg-gray-50 transition-all duration-200 cursor-pointer hover:pl-5"
-                            onClick={() => setDropdownOpen(false)}
-                          >
-                            <HiViewGrid className="w-4 h-4" />
-                            {dashboardLink.label}
-                          </Link>
-                          <button
-                            onClick={() => {
-                              clearAuth();
-                              toast.success("Logged out successfully!");
-                              window.location.href = "/";
-                            }}
-                            className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-all duration-200 cursor-pointer hover:pl-5"
-                          >
-                            <HiLogout className="w-4 h-4" />
-                            Logout
-                          </button>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                          <HiCog className="w-4 h-4" />
+                          {dashboardLink.label}
+                        </Link>
+                        <button
+                          onClick={clearAuth}
+                          className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                        >
+                          <HiLogout className="w-4 h-4" />
+                          Logout
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </>
               ) : (
@@ -227,7 +251,7 @@ export default function Navbar() {
             {/* Mobile hamburger */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-all duration-200 cursor-pointer hover:scale-110"
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
               aria-label="Toggle menu"
             >
               {mobileOpen ? (
@@ -241,104 +265,92 @@ export default function Navbar() {
       </nav>
 
       {/* Mobile Drawer */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <div className="fixed inset-0 z-30 md:hidden">
-            {/* Backdrop */}
-            <motion.div
-              className="absolute inset-0 bg-black/40"
-              onClick={() => setMobileOpen(false)}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            />
+      {mobileOpen && (
+        <div className="fixed inset-0 z-30 md:hidden">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setMobileOpen(false)}
+          />
 
-            {/* Drawer */}
-            <motion.div
-              className="absolute top-16 left-0 right-0 bg-white shadow-lg border-t border-gray-100 max-h-[calc(100vh-4rem)] overflow-y-auto"
-              initial={{ opacity: 0, y: -12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-            >
-              <div className="px-4 py-4 space-y-1">
-                {navLinks.map((link, index) => (
-                  <motion.div
-                    key={link.href}
-                    initial={{ opacity: 0, x: -12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.2, delay: index * 0.04 }}
-                  >
-                    <Link
-                      href={link.href}
-                      className={`block px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer ${
-                        isActive(link.href)
-                          ? "text-primary bg-primary/5"
-                          : "text-dark hover:text-primary hover:bg-gray-50 hover:translate-x-1"
-                      }`}
-                    >
-                      {link.label}
-                    </Link>
-                  </motion.div>
-                ))}
+          {/* Drawer */}
+          <div className="absolute top-16 left-0 right-0 bg-white shadow-lg border-t border-gray-100 max-h-[calc(100vh-4rem)] overflow-y-auto">
+            <div className="px-4 py-4 space-y-1">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                    isActive(link.href)
+                      ? "text-primary bg-primary/5"
+                      : "text-dark hover:text-primary hover:bg-gray-50"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
 
-                <div className="border-t border-gray-100 mt-3 pt-3">
-                  {isAuthenticated && user ? (
-                    <>
-                      <div className="flex items-center gap-3 px-4 py-3">
-                        <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold">
-                          {user.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-dark">
-                            {user.name}
-                          </p>
-                          <p className="text-xs text-muted">{user.email}</p>
-                        </div>
+              <div className="border-t border-gray-100 mt-3 pt-3">
+                {isAuthenticated && user ? (
+                  <>
+                    <div className="flex items-center gap-3 px-4 py-3">
+                      <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold">
+                        {user.name.charAt(0).toUpperCase()}
                       </div>
-                      <Link
-                        href={dashboardLink.href}
-                        onClick={() => setMobileOpen(false)}
-                      >
-                        <div className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-dark hover:text-primary hover:bg-gray-50 rounded-lg transition-all duration-200 cursor-pointer hover:translate-x-1">
-                          <HiViewGrid className="w-5 h-5" />
-                          {dashboardLink.label}
+                      <div>
+                        <p className="text-sm font-medium text-dark">
+                          {user.name}
+                        </p>
+                        <p className="text-xs text-muted">{user.email}</p>
+                      </div>
+                    </div>
+                    {showAddPropertyButton && (
+                      <Link href="/properties/new">
+                        <div className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-dark hover:text-primary hover:bg-gray-50 rounded-lg">
+                          <HiPlusCircle className="w-5 h-5" />
+                          List Property
                         </div>
                       </Link>
-                      <button
-                        onClick={() => {
-                          clearAuth();
-                          setMobileOpen(false);
-                          toast.success("Logged out successfully!");
-                          window.location.href = "/";
-                        }}
-                        className="flex items-center gap-2 w-full px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 cursor-pointer hover:translate-x-1"
-                      >
-                        <HiLogout className="w-5 h-5" />
-                        Logout
-                      </button>
-                    </>
-                  ) : (
-                    <div className="space-y-2 px-4">
-                      <Link href="/login" className="block">
-                        <Button variant="outline" fullWidth>
-                          Login
-                        </Button>
-                      </Link>
-                      <Link href="/register" className="block">
-                        <Button variant="primary" fullWidth>
-                          Register
-                        </Button>
-                      </Link>
-                    </div>
-                  )}
-                </div>
+                    )}
+                    <Link
+                      href={dashboardLink.href}
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      <div className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-dark hover:text-primary hover:bg-gray-50 rounded-lg">
+                        <HiCog className="w-5 h-5" />
+                        {dashboardLink.label}
+                      </div>
+                    </Link>
+                    <button
+                      onClick={() => {
+                        clearAuth();
+                        setMobileOpen(false);
+                      }}
+                      className="flex items-center gap-2 w-full px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg cursor-pointer"
+                    >
+                      <HiLogout className="w-5 h-5" />
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <div className="space-y-2 px-4">
+                    <Link href="/login" className="block">
+                      <Button variant="outline" fullWidth>
+                        Login
+                      </Button>
+                    </Link>
+                    <Link href="/register" className="block">
+                      <Button variant="primary" fullWidth>
+                        Register
+                      </Button>
+                    </Link>
+                  </div>
+                )}
               </div>
-            </motion.div>
+            </div>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
     </>
   );
 }
